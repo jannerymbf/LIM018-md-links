@@ -4,7 +4,7 @@ const MarkdownIt = require('markdown-it'), md = new MarkdownIt();
 const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 const axios = require('axios');
-const { Console } = require('node:console');
+const { link } = require('node:fs/promises');
 
 const existPath = (path) => existsSync(path);
 const isAbsolutePath = (path) => isAbsolute(path)?path:resolve(path);
@@ -86,25 +86,59 @@ const validateLink = (linkObject) => {
     })
 }
 
+//Obtener nuevo array con objetos con status y ok
+
+const obtainingArray = async (path) => {
+  const links = extractLinks(extractMd(path));
+  const promisesArray = links.map(linkObject => validateLink(linkObject));
+  const values = await Promise.all(promisesArray);
+  return values; 
+}
+
+// Obtener estadísticas
+
+const stats = (links) => {
+  let statsObject = {};
+  // TOTAL
+  statsObject.total = links.length;
+  // UNIQUE
+  let justLinks = links.map(obj => obj.href);
+  const linksArray = new Set(justLinks);
+  let result = [...linksArray]
+  statsObject.unique = result.length;
+  // BROKEN
+  const brokenLinks = links.filter(link => link.ok === 'FAIL');
+  statsObject.broken = brokenLinks.length;
+
+  return statsObject;
+}
+
+
 // 5. Crear función md links que retornará una promesa
+
 
 const mdLinks = (path, options) => {
   return new Promise ((resolve, reject) => {
     if(options.validate) {
-      const links = extractLinks(extractMd(path));
-      const promisesArray = links.map(linkObject => validateLink(linkObject));
-
-      Promise.all(promisesArray)
-        .then(values => resolve(values));
-    } else {
+      // const links = extractLinks(extractMd(path));
+      // const promisesArray = links.map(linkObject => validateLink(linkObject));
+      // Promise.all(promisesArray)
+      //   .then(values => {
+      //     resolve(statistics(values));
+      //   });
+      resolve(obtainingArray(path));
+    } else if(options.validate === false){
       resolve(extractLinks(extractMd(path)))
+    } else if(options.stats) {
+      obtainingArray(path)
+        .then(values => resolve(stats(values))); // utilicé then para capturar los valores retornados de la funcion asincrona obtainingArray
     }
   })
 }
 
-mdLinks('pruebita', {validate: true}) // what if the user just types 'otraprueba.md'?
+mdLinks('prueba.md', {stats: true}) 
   .then((result) => {
-    console.log(result); // undefined
+    console.log(result);
   })
   .catch((err) => {
     console.log(err);
