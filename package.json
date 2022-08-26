@@ -2,13 +2,15 @@
   "name": "md-links",
   "version": "0.1.0",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "jest --coverage"
   },
   "engines": {
     "node": ">=16.x"
   },
   "dependencies": {
     "axios": "^0.21.1",
+    "jest": "^28.1.3",
     "jsdom": "^20.0.0",
     "markdown-it": "^13.0.1",
     "marked": "^4.0.18"
