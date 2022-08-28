@@ -97,7 +97,7 @@ const obtainingArray = async (path) => {
 
 // Obtener estadísticas
 
-const stats = (links) => {
+const stats1 = (links) => {
   let statsObject = {};
   // TOTAL
   statsObject.total = links.length;
@@ -106,6 +106,15 @@ const stats = (links) => {
   const linksArray = new Set(justLinks);
   let result = [...linksArray]
   statsObject.unique = result.length;
+  // // BROKEN
+  // const brokenLinks = links.filter(link => link.ok === 'FAIL');
+  // statsObject.broken = brokenLinks.length;
+
+  return statsObject;
+}
+
+const stats2 = (links) => {
+  let statsObject = {};
   // BROKEN
   const brokenLinks = links.filter(link => link.ok === 'FAIL');
   statsObject.broken = brokenLinks.length;
@@ -131,15 +140,20 @@ const mdLinks = (path, options) => {
       resolve(extractLinks(extractMd(path)))
     } else if(options.stats) {
       obtainingArray(path)
-        .then(values => resolve(stats(values))); // utilicé then para capturar los valores retornados de la funcion asincrona obtainingArray
+        .then(values => resolve(stats1(values))); // utilicé then para capturar los valores retornados de la funcion asincrona obtainingArray
+    } else if(options.stats === false) {
+      obtainingArray(path)
+        .then(values => resolve({...stats1(values), ...stats2(values)}));
     }
   })
 }
 
-mdLinks('prueba.md', {stats: true}) 
-  .then((result) => {
-    console.log(result);
-  })
-  .catch((err) => {
-    console.log(err);
-  })
+// mdLinks('prueba.md', {stats: true}) 
+//   .then((result) => {
+//     console.log(result);
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   })
+
+module.exports = { mdLinks }
