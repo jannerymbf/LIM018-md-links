@@ -19,7 +19,8 @@ const checkPath = (path) => {
   if(existPath(path)){
     return isAbsolutePath(path);
   }else{
-    console.log('No existe la ruta.');
+    return 'No existe la ruta.'; // ** if I wanna throw an error? doesn't work
+    // console.log('No existe la ruta.');
   }
 }
 
@@ -156,4 +157,4 @@ const mdLinks = (path, options) => {
 //     console.log(err);
 //   })
 
-module.exports = { mdLinks }
+module.exports = { mdLinks, existPath, isAbsolutePath, checkPath, extractMd, extensionPath, readDir, joinPathDir, extractLinks, readPath, validateLink, axios }

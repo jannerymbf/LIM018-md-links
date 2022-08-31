@@ -16,7 +16,8 @@
     "markdown-it": "^13.0.1",
     "marked": "^4.0.18"
   },
+  "main": "index.js",
   "bin": {
-    "md-links": "cli.js"
+    "md-links": "./cli.js"
   }
 }

@@ -24,6 +24,8 @@ const checkDir = (path) => {
 }
 // **
 
+console.log(isAbsolutePath('prueba.md'));
+
 const checkPath = (path) => {
   if(existPath(path)){
     const absolutePath = isAbsolutePath(path);
