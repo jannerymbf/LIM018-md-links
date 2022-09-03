@@ -1,7 +1,8 @@
-const { mdLinks, existPath, isAbsolutePath, checkPath, extractMd, extensionPath, readDir, joinPathDir, extractLinks, readPath, validateLink, axios } = require('../index.js');
+const { mdLinks, existPath, isAbsolutePath, checkPath, extractMd, extensionPath, readDir, joinPathDir, extractLinks, readPath, validateLink, axios, obtainingArray, stats1, stats2 } = require('../index.js');
 
 // axios = jest.fn(() => {get()});
 // jest.mock('axios', () => jest.fn(() => {get()}))
+jest.mock('axios');
 
 describe('mdLinks', () => {
 
@@ -35,7 +36,7 @@ describe('mdLinks', () => {
 
   it('should return "No existe la ruta."', () => {
     const path = 'pruebaaa.md';
-    expect(checkPath(path)).toBe('No existe la ruta.');
+    expect(checkPath(path)).toBe('No such file or directory');
   });
 
   // belongs to 2
@@ -72,8 +73,18 @@ describe('mdLinks', () => {
 
   it('should return the content of the md file', () => {
     const path = '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba.md';
-    const text = "[Markdown](https://es.wikipedia.org/wiki/Markdown) es un lenguaje de marcado ligero muy popular entre developers. Es usado en muchísimas plataformas que manejan texto plano (GitHub, foros, blogs, ...) y es muy común encontrar varios archivos en ese formato en cualquier tipo de repositorio (empezando por el tradicional `README.md`). Dentro de una comunidad de código abierto, nos han propuesto crear una herramienta usando [Node.js](https://nodejs.org/), que lea y analice archivos en formato `Markdown`, para verificar los links que contengan y reportar algunas estadísticas."
+    const text = "[Markdown](https://es.wikipedia.org/wiki/Markdown) es un lenguaje de marcado ligero muy popular entre developers. Es usado en muchísimas plataformas que manejan texto plano (GitHub, foros, blogs, ...) y es muy común encontrar varios archivos en ese formato en cualquier tipo de repositorio (empezando por el tradicional `README.md`)."
     expect(readPath(path)).toBe(text);
+  })
+
+  it('should return 50-character text', () => {
+    const mdFiles = ['/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba2.md'];
+    const result = {
+      href: 'https://es.wikipedia.org/wiki/Markdown',
+      text: 'hellohellohellohellohellohellohellohellohellohello',
+      file: '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba2.md'
+    };
+    expect(extractLinks(mdFiles)).toContainEqual(result);
   })
 
   it('should return an array with objects href, text, file', () => {
@@ -88,21 +99,95 @@ describe('mdLinks', () => {
 
   // belongs to 4
 
-  it('should return an object with two extra keys: status and ok', () => {
-    const linkObject = {
+  it('should return an object with status and ok', () => {
+    axios.get.mockImplementation(() => Promise.resolve({status: 200, statusText: 'OK'}))
+    return validateLink({
       href: 'https://es.wikipedia.org/wiki/Markdown',
       text: 'Markdown',
-      file: '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba.md'
-    };
+      file: '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba.md'}).then(response => {expect(response).toEqual({
+        href: 'https://es.wikipedia.org/wiki/Markdown',
+        text: 'Markdown',
+        file: '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba.md',
+        status: 200,
+        ok: 'OK'
+      })})
+  })
 
-    const result = {
-      "file": "/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba.md",
-      "href": "https://es.wikipedia.org/wiki/Markdown",
-      "ok": "OK",
-      "status": 200,
-      "text": "Markdown",
-      };
-    expect(validateLink(linkObject)).toBe(result);
-  });
+  it('should return an object with status 404 and fail', () => {
+    axios.get.mockImplementation(() => Promise.reject({}))
+    return validateLink({
+      href: 'https://es.wikipedi.org/wiki/Markdown',
+      text: 'Markdown',
+      file: '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba.md'}).catch(response => {expect(response).toEqual({
+        href: 'https://es.wikipedi.org/wiki/Markdown',
+        text: 'Markdown',
+        file: '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba.md',
+        status: 404,
+        ok: 'FAIL'
+      })})
+  })
 
+  it('should return an array with links validated', async() => {
+    axios.get.mockImplementation(() => Promise.resolve({status: 200, statusText: 'OK'}))
+    const path = '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba.md';
+    const data = await(obtainingArray(path));
+    expect(data).toContainEqual({
+      href: 'https://es.wikipedia.org/wiki/Markdown',
+      text: 'Markdown',
+      file: '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba.md',
+      status: 200,
+      ok: 'OK'
+    })
+  })
+
+  it('should return an object with total and unique', () => {
+    const links = [{
+      href: 'https://es.wikipedia.org/wiki/Markdown',
+      text: 'Markdown',
+      file: '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba.md',
+      status: 200,
+      ok: 'OK'
+    }];
+
+    expect(stats1(links)).toEqual({total: 1, unique: 1});
+  })
+
+  it('should return an object with broken', () => {
+    const links = [{
+      href: 'https://es.wikipedia.org/wiki/Markdown',
+      text: 'Markdown',
+      file: '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba.md',
+      status: 200,
+      ok: 'OK'
+    }];
+
+    expect(stats2(links)).toEqual({broken: 0});
+  })
+
+  // belongs to 5
+
+  it('should return path --validate', () => {
+    axios.get.mockImplementation(() => Promise.resolve({status: 200, statusText: 'OK'}))
+    return expect(mdLinks('prueba.md', {validate: true})).resolves.toContainEqual({
+      href: 'https://es.wikipedia.org/wiki/Markdown',
+      text: 'Markdown',
+      file: '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba.md',
+      status: 200,
+      ok: 'OK'})
+  })
+
+  it('should return just path ', () => {
+    return expect(mdLinks('prueba.md', {validate: false})).resolves.toContainEqual({
+      href: 'https://es.wikipedia.org/wiki/Markdown',
+      text: 'Markdown',
+      file: '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba.md'})
+  })
+
+  it('should return path --stats', () => {
+    axios.get.mockImplementation(() => Promise.resolve({status: 200, statusText: 'OK'}))
+    const path = '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba.md';
+    return expect(mdLinks(path, {stats: true})).resolves.toEqual({total: 1, unique: 1})
+  })
 });
+
+//duda: por qué si solo ingreso una ruta, recorre todos los archivos md? tiene que ver con los mocks?

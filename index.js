@@ -4,7 +4,7 @@ const MarkdownIt = require('markdown-it'), md = new MarkdownIt();
 const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 const axios = require('axios');
-const { link } = require('node:fs/promises');
+const chalk = require('chalk');
 
 const existPath = (path) => existsSync(path);
 const isAbsolutePath = (path) => isAbsolute(path)?path:resolve(path);
@@ -16,11 +16,10 @@ const joinPathDir = (path1, path2) => join(path1, path2);
 // 1. Chequear si existe path y convertirlo en ruta absoluta ya sea directorio o archivo
 
 const checkPath = (path) => {
-  if(existPath(path)){
+  if(existPath(path)) {
     return isAbsolutePath(path);
-  }else{
-    return 'No existe la ruta.'; // ** if I wanna throw an error? doesn't work
-    // console.log('No existe la ruta.');
+  } else {
+    return 'No such file or directory'; // ** if I wanna throw an error? doesn't work
   }
 }
 
@@ -37,8 +36,9 @@ const extractMd = (path) => {
       // console.log(joinedPath);
       mdArray = [...extractMd(joinedPath)]; 
     })
-  } // else {
-  //   console.log('No es un archivo md, ni un directorio');
+  } 
+  // else {
+  //   return 'Neither md file nor directory';
   // }
   return mdArray;
 }
@@ -54,11 +54,20 @@ const extractLinks = (mdFiles) => {
 
     foundLinks.forEach(linkMd => {
       const result = md.render(linkMd); // result: string with HTML elements
-      const frag = JSDOM.fragment(result); 
+      const frag = JSDOM.fragment(result);
+
+      const textLink = frag.querySelector('a').textContent;
+      let newText = '';
+      
+      if(textLink.length > 50) {
+        newText = textLink.slice(0,50);
+      } else {
+        newText = textLink;
+      }
   
       const resultObject = {
         href: frag.querySelector('a').getAttribute('href'),
-        text: frag.querySelector('a').textContent,
+        text: newText,
         file: mdFile
       }
   
@@ -107,9 +116,6 @@ const stats1 = (links) => {
   const linksArray = new Set(justLinks);
   let result = [...linksArray]
   statsObject.unique = result.length;
-  // // BROKEN
-  // const brokenLinks = links.filter(link => link.ok === 'FAIL');
-  // statsObject.broken = brokenLinks.length;
 
   return statsObject;
 }
@@ -145,16 +151,11 @@ const mdLinks = (path, options) => {
     } else if(options.stats === false) {
       obtainingArray(path)
         .then(values => resolve({...stats1(values), ...stats2(values)}));
+        //.then(values => resolve(stats1(values) + stats2(values)))
+    } else {
+      reject(`Need help? Run ${chalk.bgGreen('--help')} for details`);
     }
   })
 }
 
-// mdLinks('prueba.md', {stats: true}) 
-//   .then((result) => {
-//     console.log(result);
-//   })
-//   .catch((err) => {
-//     console.log(err);
-//   })
-
-module.exports = { mdLinks, existPath, isAbsolutePath, checkPath, extractMd, extensionPath, readDir, joinPathDir, extractLinks, readPath, validateLink, axios }
+module.exports = { mdLinks, existPath, isAbsolutePath, checkPath, extractMd, extensionPath, readDir, joinPathDir, extractLinks, readPath, validateLink, axios, obtainingArray, stats1, stats2 }
