@@ -4,7 +4,7 @@ const { mdLinks, existPath, isAbsolutePath, checkPath, extractMd, extensionPath,
 // jest.mock('axios', () => jest.fn(() => {get()}))
 jest.mock('axios');
 
-describe('mdLinks', () => {
+describe('checkPath', () => {
 
   it('should be a function', () => {
     expect(typeof mdLinks).toBe('function');
@@ -39,7 +39,10 @@ describe('mdLinks', () => {
     expect(checkPath(path)).toBe('No such file or directory');
   });
 
+});
+
   // belongs to 2
+describe('extractMd', () => {
 
   it('should check if path is an md', () => {
     const path = 'prueba.md';
@@ -68,8 +71,10 @@ describe('mdLinks', () => {
     const result = '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/pruebita/otraprueba.md';
     expect(extractMd(path)).toContain(result);
   });
+});
 
   // belongs to 3
+describe('extractLinks', () => {
 
   it('should return the content of the md file', () => {
     const path = '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba.md';
@@ -96,9 +101,10 @@ describe('mdLinks', () => {
     };
     expect(extractLinks(mdFiles)).toContainEqual(result);
   });
+});
 
   // belongs to 4
-
+describe('validate and stats', () => {
   it('should return an object with status and ok', () => {
     axios.get.mockImplementation(() => Promise.resolve({status: 200, statusText: 'OK'}))
     return validateLink({
@@ -163,9 +169,10 @@ describe('mdLinks', () => {
 
     expect(stats2(links)).toEqual({broken: 0});
   })
+});
 
   // belongs to 5
-
+describe('mdLinks', () => {
   it('should return path --validate', () => {
     axios.get.mockImplementation(() => Promise.resolve({status: 200, statusText: 'OK'}))
     return expect(mdLinks('prueba.md', {validate: true})).resolves.toContainEqual({
