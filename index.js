@@ -23,6 +23,8 @@ const checkPath = (path) => {
   }
 }
 
+// console.log(checkPath('/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto 4/LIM018-md-links/prueba.md'));
+
 // 2. Es un directorio o un archivo? Comprobar y extraer archivos md
 
 let mdArray = [];
@@ -147,7 +149,11 @@ const mdLinks = (path, options) => {
       resolve(extractLinks(extractMd(path)))
     } else if(options.stats) {
       obtainingArray(path)
-        .then(values => resolve(stats1(values))); // utilicé then para capturar los valores retornados de la funcion asincrona obtainingArray
+        .then(values => {
+          // console.log(values);
+          // console.log(path);
+          resolve(stats1(values))
+        }); // utilicé then para capturar los valores retornados de la funcion asincrona obtainingArray
     } else if(options.stats === false) {
       obtainingArray(path)
         .then(values => resolve({...stats1(values), ...stats2(values)}));
