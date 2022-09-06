@@ -38,7 +38,7 @@ describe('checkPath', () => {
 });
 
   // belongs to 2
-  
+
 describe('extractMd', () => {
 
   it('should check if path is an md', () => {
@@ -136,7 +136,7 @@ describe('validate and stats', () => {
   it('should return an array with links validated', async() => {
     axios.get.mockImplementation(() => Promise.resolve({status: 200, statusText: 'OK'}))
     const path = '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto4/LIM018-md-links/prueba.md';
-    const data = await(obtainingArray(path));
+    const data = await obtainingArray(path);
     expect(data).toContainEqual({
       href: 'https://es.wikipedia.org/wiki/Markdown',
       text: 'Markdown',
@@ -180,27 +180,38 @@ describe('mdLinks', () => {
   });
 
   it('should return path --validate', () => {
-    axios.get.mockImplementation(() => Promise.resolve({status: 200, statusText: 'OK'}))
-    return expect(mdLinks('prueba.md', {validate: true})).resolves.toContainEqual({
+    axios.get.mockResolvedValueOnce({
+      status: 200,
+      statusText: 'OK',
+    });
+    // axios.get.mockImplementation(() => Promise.resolve({status: 200, statusText: 'OK'}))
+    expect(mdLinks('prueba2.md', {validate: true})).resolves.toContainEqual({
       href: 'https://es.wikipedia.org/wiki/Markdown',
-      text: 'Markdown',
-      file: '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto4/LIM018-md-links/prueba.md',
+      text: 'hellohellohellohellohellohellohellohellohellohello',
+      file: '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto4/LIM018-md-links/prueba2.md',
       status: 200,
       ok: 'OK'})
-  })
+  });
+
+  // it('should return path --stats', async() => {
+  //   axios.get.mockResolvedValueOnce({
+  //     status: 200,
+  //     statusText: 'OK',
+  //   });
+  //   const path = '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto4/LIM018-md-links/prueba.md';
+  //   const data = await mdLinks(path, {stats: true});
+  //   //expect(mdLinks(path, {stats: true})).resolves.toEqual({total: 1, unique: 1})
+  //   console.log(data)
+  //   expect(data).toEqual({total: 1, unique: 1});
+  // });
 
   it('should return just path ', () => {
     return expect(mdLinks('prueba.md', {validate: false})).resolves.toContainEqual({
       href: 'https://es.wikipedia.org/wiki/Markdown',
       text: 'Markdown',
       file: '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto4/LIM018-md-links/prueba.md'})
-  })
+  });
 
-  it('should return path --stats', () => {
-    axios.get.mockImplementation(() => Promise.resolve({status: 200, statusText: 'OK'}))
-    const path = '/Users/jannerybriceno/Documents/Laboratoria/Proyectos/Proyecto4/LIM018-md-links/prueba.md';
-    return expect(mdLinks(path, {stats: true})).resolves.toEqual({total: 1, unique: 1})
-  })
 });
 
 //duda: por qué si solo ingreso una ruta, recorre todos los archivos md? tiene que ver con los mocks?

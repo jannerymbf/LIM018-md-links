@@ -152,6 +152,7 @@ const mdLinks = (path, options) => {
         .then(values => {
           // console.log(values);
           // console.log(path);
+          console.log(stats1(values), path, values)
           resolve(stats1(values))
         }); // utilicé then para capturar los valores retornados de la funcion asincrona obtainingArray
     } else if(options.stats === false) {
